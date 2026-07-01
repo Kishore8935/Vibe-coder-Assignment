@@ -1,167 +1,202 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { AddToListButton } from "@/components/profile/AddToListButton";
+import { PlatformBadge } from "@/components/profile/PlatformBadge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { FullUserProfile, Platform, ProfileDetailResponse } from "@/types";
-import { formatEngagementRate } from "@/utils/formatters";
+import { formatEngagementRate, formatFollowers } from "@/utils/formatters";
 import { isPlatform } from "@/utils/dataHelpers";
 import { loadProfileByUsername } from "@/utils/profileLoader";
 
-function formatFollowersDetail(count: number) {
-  if (count >= 1000000) return (count / 1000000).toFixed(2) + "M";
-  if (count >= 1000) return (count / 1000).toFixed(1) + "K";
-  return String(count);
+interface LoadedProfile {
+  username: string;
+  data: ProfileDetailResponse | null;
+}
+
+interface Stat {
+  label: string;
+  value: string;
+}
+
+function BackLink() {
+  return (
+    <Link
+      to="/"
+      className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" />
+      Back to search
+    </Link>
+  );
+}
+
+function ProfileDetailSkeleton() {
+  return (
+    <div>
+      <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <Skeleton className="size-24 rounded-full" />
+          <div className="flex-1 space-y-3">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-full max-w-md" />
+            <Skeleton className="h-8 w-40" />
+          </div>
+        </div>
+      </div>
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function ProfileDetailPage() {
   const { username } = useParams<{ username: string }>();
   const [searchParams] = useSearchParams();
-  const platform = searchParams.get("platform") || "unknown";
-  const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(
-    null
-  );
-  const [loaded, setLoaded] = useState(false);
+  const platformParam = searchParams.get("platform") ?? "";
+  const [result, setResult] = useState<LoadedProfile | null>(null);
 
   useEffect(() => {
     if (!username) return;
 
-    loadProfileByUsername(username).then((data) => {
-      setProfileData(data);
-      setLoaded(true);
-    });
+    let active = true;
+    loadProfileByUsername(username)
+      .then((data) => {
+        if (active) setResult({ username, data });
+      })
+      .catch((error) => {
+        console.error("Failed to load profile:", error);
+        if (active) setResult({ username, data: null });
+      });
+
+    return () => {
+      active = false;
+    };
   }, [username]);
 
   if (!username) {
     return (
       <Layout>
         <p>Invalid profile</p>
-        <Link to="/">Back</Link>
-      </Layout>
-    );
-  }
-
-  if (!loaded) {
-    return (
-      <Layout title={`@${username}`}>
-        <p className="text-gray-400">Loading...</p>
-      </Layout>
-    );
-  }
-
-  if (!profileData) {
-    return (
-      <Layout title={`@${username}`}>
-        <p className="text-red-600 mb-4">
-          Could not load profile details for {username}
-        </p>
-        <Link to="/" className="text-blue-600 underline">
-          Back to search
+        <Link to="/" className="text-primary underline">
+          Back
         </Link>
       </Layout>
     );
   }
 
-  const user: FullUserProfile = profileData.data.user_profile;
+  // While the fetch for the current username is in flight, `result` is either
+  // null or still holds the previous username's data — both mean "loading".
+  if (!result || result.username !== username) {
+    return (
+      <Layout title={`@${username}`}>
+        <BackLink />
+        <ProfileDetailSkeleton />
+      </Layout>
+    );
+  }
+
+  if (!result.data) {
+    return (
+      <Layout title={`@${username}`}>
+        <BackLink />
+        <div className="rounded-lg border border-dashed py-16 text-center">
+          <p className="mb-2 text-muted-foreground">
+            Could not load profile details for @{username}.
+          </p>
+          <Button asChild size="sm">
+            <Link to="/">Back to search</Link>
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const user: FullUserProfile = result.data.data.user_profile;
   const profileType = user.type ?? "";
-  const resolvedPlatform: Platform = isPlatform(platform)
-    ? platform
+  const resolvedPlatform: Platform = isPlatform(platformParam)
+    ? platformParam
     : isPlatform(profileType)
       ? profileType
       : "instagram";
 
+  const stats: Stat[] = [
+    { label: "Followers", value: formatFollowers(user.followers) },
+    {
+      label: "Engagement Rate",
+      value: formatEngagementRate(user.engagement_rate),
+    },
+    ...(user.posts_count !== undefined
+      ? [{ label: "Posts", value: formatFollowers(user.posts_count) }]
+      : []),
+    ...(user.avg_likes !== undefined
+      ? [{ label: "Avg Likes", value: formatFollowers(user.avg_likes) }]
+      : []),
+    ...(user.avg_comments !== undefined
+      ? [{ label: "Avg Comments", value: formatFollowers(user.avg_comments) }]
+      : []),
+    ...(user.avg_views !== undefined && user.avg_views > 0
+      ? [{ label: "Avg Views", value: formatFollowers(user.avg_views) }]
+      : []),
+    ...(user.engagements !== undefined
+      ? [{ label: "Engagements", value: formatFollowers(user.engagements) }]
+      : []),
+  ];
+
   return (
     <Layout title={user.fullname}>
-      <Link to="/" className="text-sm text-blue-600 mb-4 inline-block">
-        ← Back to search
-      </Link>
+      <BackLink />
 
-      <div className="flex gap-6 items-start text-left max-w-2xl mx-auto">
-        <img
-          src={user.picture}
-          className="w-24 h-24 rounded-full border"
-        />
-        <div className="flex-1">
-          <h2 className="text-xl font-bold">
-            @{user.username}
-            <VerifiedBadge verified={user.is_verified} />
-          </h2>
-          <p className="text-gray-600">{user.fullname}</p>
-          <p className="text-xs text-gray-400 mt-1">Platform: {platform}</p>
-
-          {user.description && (
-            <p className="mt-3 text-sm text-gray-700">{user.description}</p>
-          )}
-
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div className="border p-2 rounded">
-              <div className="text-gray-500">Followers</div>
-              <div className="font-semibold">
-                {formatFollowersDetail(user.followers)}
-              </div>
-            </div>
-            <div className="border p-2 rounded">
-              <div className="text-gray-500">Engagement Rate</div>
-              <div className="font-semibold">
-                {user.engagement_rate !== undefined
-                  ? (user.engagement_rate * 10000).toFixed(2) + "%"
-                  : "N/A"}
-              </div>
-            </div>
-            {user.posts_count !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Posts</div>
-                <div className="font-semibold">{user.posts_count}</div>
-              </div>
-            )}
-            {user.avg_likes !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Avg Likes</div>
-                <div className="font-semibold">
-                  {formatFollowersDetail(user.avg_likes)}
-                </div>
-              </div>
-            )}
-            {user.avg_comments !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Avg Comments</div>
-                <div className="font-semibold">{user.avg_comments}</div>
-              </div>
-            )}
-            {user.avg_views !== undefined && user.avg_views > 0 && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Avg Views</div>
-                <div className="font-semibold">
-                  {formatFollowersDetail(user.avg_views)}
-                </div>
-              </div>
-            )}
-            {user.engagements !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Engagements</div>
-                <div className="font-semibold">
-                  {formatEngagementRate(user.engagement_rate)}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {user.url && (
-            <a
-              href={user.url}
-              target="_blank"
-              className="inline-block mt-4 text-blue-600 text-sm"
-            >
-              View on platform →
-            </a>
-          )}
-
-          <AddToListButton
-            profile={user}
-            platform={resolvedPlatform}
-            className="mt-4"
+      <div className="rounded-xl bg-card p-6 text-card-foreground ring-1 ring-foreground/10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <img
+            src={user.picture}
+            alt={`${user.fullname} profile picture`}
+            className="size-24 shrink-0 rounded-full object-cover ring-1 ring-border"
           />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl font-semibold">@{user.username}</h2>
+              <VerifiedBadge verified={user.is_verified} />
+              <PlatformBadge platform={resolvedPlatform} />
+            </div>
+            <p className="text-muted-foreground">{user.fullname}</p>
+            {user.description && (
+              <p className="mt-2 max-w-prose text-sm">{user.description}</p>
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <AddToListButton profile={user} platform={resolvedPlatform} />
+              {user.url && (
+                <Button asChild variant="outline" size="sm">
+                  <a href={user.url} target="_blank" rel="noopener noreferrer">
+                    View on platform
+                    <ExternalLink />
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10"
+          >
+            <div className="text-xs text-muted-foreground">{stat.label}</div>
+            <div className="text-lg font-semibold">{stat.value}</div>
+          </div>
+        ))}
       </div>
     </Layout>
   );

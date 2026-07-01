@@ -4,5 +4,13 @@ interface VerifiedBadgeProps {
 
 export function VerifiedBadge({ verified }: VerifiedBadgeProps) {
   if (!verified) return null;
-  return <span className="text-blue-500 text-xs ml-1">✓</span>;
+  return (
+    <span
+      className="text-blue-500 text-xs ml-1"
+      role="img"
+      aria-label="Verified account"
+    >
+      ✓
+    </span>
+  );
 }

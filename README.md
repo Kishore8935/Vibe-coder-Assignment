@@ -46,16 +46,19 @@ Then open **http://localhost:5173**.
 
 _Sections are marked ✅ done / 🔧 in progress / ⬜ planned and filled in as work lands._
 
-### 🐛 Bug Fixes ⬜
-Identified in the starter (details in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)):
-- Engagement Rate stat multiplied by `10000` instead of `100` (showed ~142% instead of ~1.4%).
-- "Engagements" stat rendered a percentage instead of the engagement **count**.
-- Username search was case-sensitive (fullname wasn't) → "Instagram" missed `instagram`.
-- Dead `clickCount` state in `SearchPage` causing needless re-renders + stale-closure log.
-- No error handling / no loading reset on profile load (`ProfileDetailPage`).
-- Non-responsive layout: hardcoded `w-[700px]` card and fixed `#root { width: 1126px }`.
-- Accessibility gaps: images without `alt`, verified glyph without a label, non-focusable clickable `<div>` cards.
+### 🐛 Bug Fixes ✅
+- **Engagement Rate** stat multiplied by `10000` instead of `100` (showed ~142% instead of ~1.43%) — now reuses the shared `formatEngagementRate` helper.
+- **"Engagements"** stat rendered the rate percentage instead of the engagement **count** — now shows the formatted count.
+- **Username search** was case-sensitive (fullname wasn't) → "INSTAGRAM" missed `instagram`. Now trimmed + case-insensitive on both fields.
+- Removed the dead `clickCount` state in `SearchPage` (unused, caused re-renders + a stale-closure `console.log`), and the now-pointless `onProfileClick`/`searchQuery` plumbing it required.
+- **Profile load** now has error handling (`.catch`) and a race guard, and correctly shows a loading state when switching between profiles (previous data no longer flashes).
+- **Responsiveness:** removed the hardcoded `w-[700px]` card width (broke mobile) — cards are now fluid.
+- **Accessibility:** images have `alt` text; the verified badge has `role="img"` + `aria-label`; profile cards use a real `<Link>` (keyboard-focusable with a visible focus ring) instead of a click-only `<div>`.
+- External profile link now uses `rel="noopener noreferrer"`.
 - Removed unused, React-19-incompatible dependency `react-beautiful-dnd`.
+- ESLint override for the generated `src/components/ui/**` (shadcn) files so `npm run lint` passes cleanly.
+
+_Verified in-browser with Playwright: MrBeast engagement rate reads 1.43%, engagements read 1.3M, uppercase/mixed-case search matches, and a profile with no detail JSON shows a graceful message — no console errors._
 
 ### 🗃️ State Management → Zustand ✅
 Shared "Saved list" state implemented in [src/store/useSavedStore.ts](src/store/useSavedStore.ts) with a Zustand store + `persist` middleware (localStorage key `wobb:saved-list`). The starter had no React Context; per the assignment, Zustand is the state layer. Consumed via atomic selectors (`useIsProfileSaved`, `useSavedCount`) to avoid unnecessary re-renders.
@@ -67,8 +70,14 @@ Shared "Saved list" state implemented in [src/store/useSavedStore.ts](src/store/
 - `SavedListPage` at **`/list`** ([src/pages/SavedListPage.tsx](src/pages/SavedListPage.tsx)) — full-page view of saved profiles with an empty state and CTA back to search.
 - Persistent across page reloads (localStorage) — verified manually via Playwright: reloaded a saved profile's detail page and the "Saved" state survived.
 
-### 🎨 UI/UX Redesign ⬜
-Modern, responsive, accessible redesign with shadcn/ui — responsive card grid, sticky header with saved-count badge, light/dark mode, loading skeletons, and empty states.
+### 🎨 UI/UX Redesign ✅
+- Sticky header ([src/components/layout/Header.tsx](src/components/layout/Header.tsx)) with brand mark, Saved count badge, and a light/dark/system theme toggle (`next-themes`).
+- Dashboard: segmented platform tabs, search input with icon, responsive **1/2/3-column card grid** ([ProfileList.tsx](src/components/ProfileList.tsx)), platform-colored badges per card.
+- Profile detail: hero card (avatar, name, verified + platform badge, description, actions) above a responsive stats grid, plus a **loading skeleton** while the JSON is fetched.
+- Saved list: drawer (slide-over) and `/list` page both redesigned with the same card grid and an empty state with a CTA back to search.
+- Removed the legacy fixed-width `#root` shell and rewrote `index.css` around shadcn's design tokens (light + dark palettes).
+
+_Verified in-browser with Playwright across dashboard/detail/list, light + dark themes, search/tab interactions, and a 390px mobile viewport — no console errors. Also caught and fixed a real bug surfaced during this pass: 2 of 10 YouTube source records omit `username` (only `handle`), which produced a broken `/profile/undefined` route — `extractProfiles` now falls back to `handle`, then `user_id`._
 
 ### 🧹 Code Quality ⬜
 Feature-oriented folder structure, unified formatting utilities (removed 3 duplicate follower-formatters), accurate TypeScript types matching the JSON data, removed dead `SearchBar` component.
@@ -121,6 +130,20 @@ Memoized derived lists, `React.memo` on cards, debounced search input, atomic Zu
 ## Progress Log
 
 _Newest first. Dates are IST._
+
+### 2026-07-01 (Step 5: UI/UX redesign)
+- Rebuilt `index.css` around shadcn's OKLCH design tokens (light + dark), dropped the legacy fixed-width `#root` shell.
+- Added `ThemeProvider` (`next-themes`) in `main.tsx`, a `ThemeToggle`, and a sticky `Header` (brand, Saved badge, theme menu); `Layout` now just wraps `Header` + a centered `<main>`.
+- Redesigned `PlatformFilter` (segmented tabs + icon search input), `ProfileCard` (shadcn `Card`, platform-colored `PlatformBadge`, `Link`-based nav), `ProfileList` (responsive grid + empty state), `ProfileDetailPage` (hero card, stats grid, loading skeleton), and `SavedListPage` (grid + empty state) — all using shadcn primitives.
+- **Found and fixed a real data bug while redesigning:** 2 of 10 YouTube search records have no `username` field (only `handle`), which produced a broken `@` display and a dead `/profile/undefined` route. Fixed at the source in `extractProfiles` with a `username || handle || user_id` fallback.
+- Verified with Playwright: dashboard, detail page, `/list`, drawer — in both light and dark themes, plus a 390px mobile viewport. No console errors. `npm run build` and `npm run lint` both pass.
+
+### 2026-07-01 (Step 4: Bug-fix batch)
+- Fixed the engagement-rate math bug, the mislabeled Engagements stat, case-insensitive/trimmed search, and removed the dead click-counter.
+- Rewrote profile loading to tag results by username and derive loading state (added `.catch`, removed stale-data flash, and satisfied the React 19 `set-state-in-effect` lint rule without synchronous resets in the effect body).
+- Accessibility: alt text, verified-badge label, and keyboard-focusable cards via a real `<Link>`; external link hardened with `rel="noopener noreferrer"`.
+- Started unifying number formatting on the shared `formatFollowers`/`formatEngagementRate` (removed two local duplicate formatters); more consolidation to come in the code-quality step.
+- Added an ESLint override for shadcn's generated `ui/` files. `npm run build` and `npm run lint` both pass; re-verified the flows in-browser with Playwright (no console errors).
 
 ### 2026-07-01 (Steps 2 & 3: Zustand store + Add to List feature)
 - Added `src/store/useSavedStore.ts` — Zustand store with `persist` middleware, dedupe-on-add, `useIsProfileSaved`/`useSavedCount` selector hooks.

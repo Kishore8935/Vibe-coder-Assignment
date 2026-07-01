@@ -11,12 +11,19 @@ export function SavedListPage() {
 
   return (
     <Layout title="Saved Profiles">
-      <p className="mb-4 text-sm text-gray-500">
-        {saved.length} profile{saved.length === 1 ? "" : "s"} in your list
-      </p>
+      <div className="mb-6 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {saved.length} profile{saved.length === 1 ? "" : "s"} in your list
+        </p>
+        {saved.length > 0 && (
+          <Button type="button" variant="ghost" size="sm" onClick={clear}>
+            Clear all
+          </Button>
+        )}
+      </div>
 
       {saved.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center text-gray-500">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-16 text-center text-muted-foreground">
           <Bookmark className="size-10" />
           <p>You haven&apos;t saved any profiles yet.</p>
           <Button asChild size="sm">
@@ -24,23 +31,15 @@ export function SavedListPage() {
           </Button>
         </div>
       ) : (
-        <>
-          <div className="flex flex-col items-center">
-            {saved.map((profile) => (
-              <ProfileCard
-                key={profile.user_id}
-                profile={profile}
-                platform={profile.platform}
-                searchQuery=""
-              />
-            ))}
-          </div>
-          <div className="mt-4 flex justify-center">
-            <Button type="button" variant="ghost" size="sm" onClick={clear}>
-              Clear all
-            </Button>
-          </div>
-        </>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {saved.map((profile) => (
+            <ProfileCard
+              key={profile.user_id}
+              profile={profile}
+              platform={profile.platform}
+            />
+          ))}
+        </div>
       )}
     </Layout>
   );

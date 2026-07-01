@@ -15,17 +15,27 @@ export function getSearchData(platform: Platform): SearchData {
 
 export function extractProfiles(platform: Platform): UserProfileSummary[] {
   const data = getSearchData(platform);
-  return data.accounts.map((item) => item.account.user_profile);
+  return data.accounts.map((item) => {
+    const profile = item.account.user_profile;
+    // A handful of source records (e.g. some YouTube channels) omit
+    // `username` and only carry `handle`. Fall back so routing/display
+    // never end up with an empty or "undefined" identifier.
+    return {
+      ...profile,
+      username: profile.username || profile.handle || profile.user_id,
+    };
+  });
 }
 
 export function filterProfiles(
   profiles: UserProfileSummary[],
   query: string
 ): UserProfileSummary[] {
-  if (!query) return profiles;
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return profiles;
   return profiles.filter((p) => {
-    const matchUsername = p.username.includes(query);
-    const matchFullname = p.fullname.toLowerCase().includes(query.toLowerCase());
+    const matchUsername = p.username.toLowerCase().includes(normalized);
+    const matchFullname = p.fullname.toLowerCase().includes(normalized);
     return matchUsername || matchFullname;
   });
 }
