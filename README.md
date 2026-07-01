@@ -57,11 +57,15 @@ Identified in the starter (details in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PL
 - Accessibility gaps: images without `alt`, verified glyph without a label, non-focusable clickable `<div>` cards.
 - Removed unused, React-19-incompatible dependency `react-beautiful-dnd`.
 
-### 🗃️ State Management → Zustand ⬜
-Shared "Saved list" state implemented with a Zustand store + `persist` middleware (localStorage). The starter had no React Context; per the assignment, Zustand is the state layer.
+### 🗃️ State Management → Zustand ✅
+Shared "Saved list" state implemented in [src/store/useSavedStore.ts](src/store/useSavedStore.ts) with a Zustand store + `persist` middleware (localStorage key `wobb:saved-list`). The starter had no React Context; per the assignment, Zustand is the state layer. Consumed via atomic selectors (`useIsProfileSaved`, `useSavedCount`) to avoid unnecessary re-renders.
 
-### ⭐ "Add to List" Feature ⬜
-Add/remove profiles to a saved list, deduped by user id, viewable via a header **drawer** and a dedicated **`/list`** page, persistent across refreshes.
+### ⭐ "Add to List" Feature ✅
+- `AddToListButton` ([src/components/profile/AddToListButton.tsx](src/components/profile/AddToListButton.tsx)) — reusable toggle button (icon-only on cards, labeled on the detail page) with toast feedback, used in both `ProfileCard` and `ProfileDetailPage`.
+- Deduped by `user_id` at the store level — verified with an automated cross-surface check (add via card → visit that profile's own detail page → already shows "Saved", storage still holds exactly one entry).
+- `SavedListDrawer` ([src/components/saved/SavedListDrawer.tsx](src/components/saved/SavedListDrawer.tsx)) — header-triggered slide-over with remove-per-item and "Clear all."
+- `SavedListPage` at **`/list`** ([src/pages/SavedListPage.tsx](src/pages/SavedListPage.tsx)) — full-page view of saved profiles with an empty state and CTA back to search.
+- Persistent across page reloads (localStorage) — verified manually via Playwright: reloaded a saved profile's detail page and the "Saved" state survived.
 
 ### 🎨 UI/UX Redesign ⬜
 Modern, responsive, accessible redesign with shadcn/ui — responsive card grid, sticky header with saved-count badge, light/dark mode, loading skeletons, and empty states.
@@ -117,6 +121,14 @@ Memoized derived lists, `React.memo` on cards, debounced search input, atomic Zu
 ## Progress Log
 
 _Newest first. Dates are IST._
+
+### 2026-07-01 (Steps 2 & 3: Zustand store + Add to List feature)
+- Added `src/store/useSavedStore.ts` — Zustand store with `persist` middleware, dedupe-on-add, `useIsProfileSaved`/`useSavedCount` selector hooks.
+- Built `AddToListButton`, `SavedListDrawer` (header slide-over), and `SavedListPage` (`/list` route); wired the header's Saved count badge in `Layout.tsx`; mounted the `Toaster` in `App.tsx`.
+- Replaced both disabled "Add to List" stubs (`ProfileCard.tsx`, `ProfileDetailPage.tsx`) with the real button.
+- Added an `isPlatform` type guard (`utils/dataHelpers.ts`) to safely resolve a valid `Platform` on the detail page when saving (falls back to the profile's own `type` field, then `"instagram"`, if the `?platform=` query param is missing/invalid).
+- **Verified end-to-end with Playwright** (installed locally for this check; not a project dependency) against the running dev server: add/remove from cards and detail page, toast feedback, header badge count, drawer open/remove/clear-all, `/list` page + empty state, cross-surface dedupe (adding via a card then visiting that profile's own detail page shows it already saved, with exactly one entry in `localStorage`), and persistence across a real page reload. No console/page errors observed. `tsc -b` and `npm run build` both pass.
+- Noted in passing (not fixed yet, out of scope for this commit): the Engagement Rate stat bug is still visibly present on the detail page — scheduled for the Step 4 bug-fix pass.
 
 ### 2026-07-01 (Step 1: Dependencies & tooling)
 - Installed **Zustand** for state management.

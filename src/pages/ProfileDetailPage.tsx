@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
-import type { FullUserProfile, ProfileDetailResponse } from "@/types";
+import { AddToListButton } from "@/components/profile/AddToListButton";
+import type { FullUserProfile, Platform, ProfileDetailResponse } from "@/types";
 import { formatEngagementRate } from "@/utils/formatters";
+import { isPlatform } from "@/utils/dataHelpers";
 import { loadProfileByUsername } from "@/utils/profileLoader";
 
 function formatFollowersDetail(count: number) {
@@ -61,6 +63,12 @@ export function ProfileDetailPage() {
   }
 
   const user: FullUserProfile = profileData.data.user_profile;
+  const profileType = user.type ?? "";
+  const resolvedPlatform: Platform = isPlatform(platform)
+    ? platform
+    : isPlatform(profileType)
+      ? profileType
+      : "instagram";
 
   return (
     <Layout title={user.fullname}>
@@ -148,14 +156,11 @@ export function ProfileDetailPage() {
             </a>
           )}
 
-          {/* TODO: candidates must implement Add to List feature */}
-          {/* TODO: candidates must implement Add to List feature */}
-          <button
-            disabled
-            className="block mt-4 px-4 py-2 bg-gray-300 text-gray-500 rounded cursor-not-allowed"
-          >
-            Add to List
-          </button>
+          <AddToListButton
+            profile={user}
+            platform={resolvedPlatform}
+            className="mt-4"
+          />
         </div>
       </div>
     </Layout>

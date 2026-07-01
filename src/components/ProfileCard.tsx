@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { Platform, UserProfileSummary } from "@/types";
+import { AddToListButton } from "@/components/profile/AddToListButton";
 import { VerifiedBadge } from "./VerifiedBadge";
 
 interface ProfileCardProps {
@@ -43,15 +44,7 @@ export function ProfileCard({
         <div className="text-sm text-gray-600">{profile.fullname}</div>
         <div className="text-sm">{formatFollowersLocal(profile.followers)}</div>
       </div>
-      {/* TODO: candidates must implement Add to List feature */}
-      {/* TODO: candidates must implement Add to List feature */}
-      <button
-        disabled
-        className="px-3 py-1 bg-gray-300 text-gray-500 text-sm rounded cursor-not-allowed"
-        onClick={(e) => e.stopPropagation()}
-      >
-        Add to List
-      </button>
+      <AddToListButton profile={profile} platform={platform} compact />
     </div>
   );
 }
