@@ -78,7 +78,16 @@ Memoized derived lists, `React.memo` on cards, debounced search input, atomic Zu
 
 | Library | Purpose |
 | ------- | ------- |
-| _(to be filled as added)_ | |
+| `zustand` | Shared state management for the Saved list (replaces React Context, persisted to localStorage) |
+| `shadcn/ui` (+ `radix-ui`) | Accessible, unstyled UI primitives (button, card, sheet/drawer, dropdown, tooltip, etc.) |
+| `lucide-react` | Icon set used throughout the redesigned UI |
+| `sonner` | Toast notifications (e.g. "Added to list") |
+| `next-themes` | Light/dark mode toggle |
+| `clsx` + `tailwind-merge` (`cn()` helper) | Safely compose conditional Tailwind class names |
+| `class-variance-authority` | Typed style variants for shadcn components |
+| `tw-animate-css` | Small utility animations/transitions |
+| `@fontsource-variable/geist` | Self-hosted Geist variable font |
+| ~~`react-beautiful-dnd`~~ | **Removed** — unused, deprecated, incompatible with React 19 |
 
 ---
 
@@ -109,7 +118,14 @@ Memoized derived lists, `React.memo` on cards, debounced search input, atomic Zu
 
 _Newest first. Dates are IST._
 
-### 2026-07-01
+### 2026-07-01 (Step 1: Dependencies & tooling)
+- Installed **Zustand** for state management.
+- Initialized **shadcn/ui** for Vite + Tailwind v4 (auto-detected the existing `@/*` alias and Radix setup); added components: `button`, `badge`, `input`, `card`, `sheet`, `skeleton`, `tooltip`, `sonner`, `dropdown-menu`.
+- Picked up `lucide-react` (icons), `clsx` + `tailwind-merge` + `class-variance-authority` (styling utils), `next-themes` (dark mode), `tw-animate-css` (animations), and the Geist variable font via the shadcn preset.
+- Added `src/lib/utils.ts` (`cn()` helper).
+- Verified `npm run build` (`tsc -b && vite build`) and `npm run dev` both succeed with no errors.
+
+### 2026-07-01 (Environment setup)
 - **Planning:** Read the full starter codebase; produced a detailed implementation plan ([IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)) covering all 7 assignment tasks.
 - **Environment diagnosis & fixes:**
   - `npm install` failed with `ERESOLVE` — root cause: `react-beautiful-dnd@13.1.1` (deprecated, unused) requires React 16–18 but the project is on React 19. Resolution: remove the package.
