@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { Bookmark, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,40 +40,48 @@ export function SavedListDrawer({ open, onOpenChange }: SavedListDrawerProps) {
               <p className="text-sm">No profiles saved yet.</p>
             </div>
           ) : (
-            <ul className="flex flex-col gap-2">
-              {saved.map((profile) => (
-                <li
-                  key={profile.user_id}
-                  className="flex items-center gap-3 rounded-lg border p-2"
-                >
-                  <img
-                    src={profile.picture}
-                    alt={`${profile.fullname}'s avatar`}
-                    className="size-10 shrink-0 rounded-full object-cover"
-                  />
-                  <Link
-                    to={`/profile/${profile.username}?platform=${profile.platform}`}
-                    onClick={() => onOpenChange(false)}
-                    className="min-w-0 flex-1"
+            <ul className="flex flex-col">
+              <AnimatePresence initial={false}>
+                {saved.map((profile) => (
+                  <motion.li
+                    key={profile.user_id}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="overflow-hidden"
                   >
-                    <div className="truncate text-sm font-medium">
-                      @{profile.username}
+                    <div className="mb-2 flex items-center gap-3 rounded-lg border p-2">
+                      <img
+                        src={profile.picture}
+                        alt={`${profile.fullname}'s avatar`}
+                        className="size-10 shrink-0 rounded-full object-cover"
+                      />
+                      <Link
+                        to={`/profile/${profile.username}?platform=${profile.platform}`}
+                        onClick={() => onOpenChange(false)}
+                        className="min-w-0 flex-1"
+                      >
+                        <div className="truncate text-sm font-medium">
+                          @{profile.username}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {formatFollowers(profile.followers)} followers
+                        </div>
+                      </Link>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={`Remove @${profile.username}`}
+                        onClick={() => removeProfile(profile.user_id)}
+                      >
+                        <Trash2 />
+                      </Button>
                     </div>
-                    <div className="truncate text-xs text-muted-foreground">
-                      {formatFollowers(profile.followers)} followers
-                    </div>
-                  </Link>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Remove @${profile.username}`}
-                    onClick={() => removeProfile(profile.user_id)}
-                  >
-                    <Trash2 />
-                  </Button>
-                </li>
-              ))}
+                  </motion.li>
+                ))}
+              </AnimatePresence>
             </ul>
           )}
         </div>

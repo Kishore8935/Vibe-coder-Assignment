@@ -17,7 +17,10 @@ export const ProfileCard = memo(function ProfileCard({
   platform,
 }: ProfileCardProps) {
   return (
-    <Card size="sm" className="justify-between transition-shadow hover:shadow-md">
+    <Card
+      size="sm"
+      className="justify-between transition-all hover:shadow-md motion-safe:hover:-translate-y-0.5"
+    >
       <Link
         to={`/profile/${profile.username}?platform=${platform}`}
         className="flex items-start gap-3 px-4 focus-visible:outline-none"
