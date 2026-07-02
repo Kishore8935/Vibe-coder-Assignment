@@ -2,7 +2,7 @@
 
 An influencer search & discovery app built with **React 19, TypeScript, Vite, and Tailwind CSS v4**. This takes the provided Wobb starter and turns it into a polished, production-minded application: bugs fixed, UI fully redesigned, shared state moved to Zustand, a persistent "Saved list" feature implemented, and code quality, types, performance, and tests added throughout.
 
-**Live demo:** _add your Vercel URL here after deploying_ → `https://<your-app>.vercel.app`
+**Live demo:** [https://vibe-coder-assignment-one.vercel.app](https://vibe-coder-assignment-one.vercel.app)
 
 ---
 
@@ -93,6 +93,7 @@ Shared "Saved list" state lives in [src/store/useSavedStore.ts](src/store/useSav
 - Dashboard: segmented platform tabs, icon search input, responsive **1/2/3-column card grid**, platform-colored badges.
 - Profile detail: hero card + responsive stats grid + loading skeleton.
 - Rewrote `index.css` around shadcn's design tokens (light + dark); removed the legacy fixed-width `#root` shell. Added a friendly **404 page**.
+- **Micro-interactions** (`framer-motion`): staggered card entrance on the results grid (replays on tab switch), animated add/remove in the saved drawer, and a subtle hover lift on cards — all automatically disabled for users with `prefers-reduced-motion` (`MotionConfig reducedMotion="user"` + Tailwind `motion-safe:`).
 
 ### 🧹 Code quality
 - **Feature-oriented folder structure** (see above); deleted the dead `SearchBar` component.
@@ -122,6 +123,7 @@ Shared "Saved list" state lives in [src/store/useSavedStore.ts](src/store/useSav
 | `lucide-react` | Icon set |
 | `sonner` | Toast notifications |
 | `next-themes` | Light/dark/system theme |
+| `framer-motion` | Micro-interactions (staggered grid entrance, animated drawer add/remove) with reduced-motion support |
 | `clsx` + `tailwind-merge` | `cn()` class composition helper |
 | `class-variance-authority` | Typed style variants for components |
 | `vitest`, `@testing-library/*`, `jsdom` | Unit/component testing |
@@ -144,7 +146,7 @@ Shared "Saved list" state lives in [src/store/useSavedStore.ts](src/store/useSav
 ## Remaining Improvements
 
 - Swap the bundled JSON for a real API with a data-fetching layer (e.g. TanStack Query) and list virtualization for large result sets.
-- More micro-interactions (e.g. `framer-motion` list add/remove animations) and deeper a11y (skip-link, `aria-live` result count, reduced-motion).
+- Deeper a11y (skip-to-content link, `aria-live` announcement of the result count).
 - Broaden test coverage to pages/routing and add a CI workflow (build + lint + test on push).
 
 ---
