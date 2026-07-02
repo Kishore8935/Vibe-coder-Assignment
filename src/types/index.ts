@@ -29,13 +29,9 @@ export interface SearchData {
 export interface FullUserProfile extends UserProfileSummary {
   type?: string;
   description?: string;
-  is_business?: boolean;
   posts_count?: number;
   avg_likes?: number;
   avg_comments?: number;
-  avg_reels_plays?: number;
-  gender?: string;
-  age_group?: string;
 }
 
 export interface ProfileDetailResponse {

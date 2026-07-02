@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Bookmark } from "lucide-react";
-import { Layout } from "@/components/Layout";
-import { ProfileCard } from "@/components/ProfileCard";
+import { Layout } from "@/components/layout/Layout";
+import { ProfileCard } from "@/components/profile/ProfileCard";
 import { Button } from "@/components/ui/button";
 import { useSavedStore } from "@/store/useSavedStore";
 

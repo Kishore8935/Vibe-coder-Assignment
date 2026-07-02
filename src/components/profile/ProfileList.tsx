@@ -1,5 +1,5 @@
 import type { Platform, UserProfileSummary } from "@/types";
-import { ProfileCard } from "./ProfileCard";
+import { ProfileCard } from "@/components/profile/ProfileCard";
 
 interface ProfileListProps {
   profiles: UserProfileSummary[];

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { Layout } from "@/components/Layout";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { Layout } from "@/components/layout/Layout";
+import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
 import { AddToListButton } from "@/components/profile/AddToListButton";
 import { PlatformBadge } from "@/components/profile/PlatformBadge";
 import { Button } from "@/components/ui/button";

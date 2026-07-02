@@ -1,17 +1,21 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import type { Platform, UserProfileSummary } from "@/types";
 import { AddToListButton } from "@/components/profile/AddToListButton";
 import { PlatformBadge } from "@/components/profile/PlatformBadge";
+import { VerifiedBadge } from "@/components/profile/VerifiedBadge";
 import { Card } from "@/components/ui/card";
 import { formatFollowers } from "@/utils/formatters";
-import { VerifiedBadge } from "./VerifiedBadge";
 
 interface ProfileCardProps {
   profile: UserProfileSummary;
   platform: Platform;
 }
 
-export function ProfileCard({ profile, platform }: ProfileCardProps) {
+export const ProfileCard = memo(function ProfileCard({
+  profile,
+  platform,
+}: ProfileCardProps) {
   return (
     <Card size="sm" className="justify-between transition-shadow hover:shadow-md">
       <Link
@@ -47,4 +51,4 @@ export function ProfileCard({ profile, platform }: ProfileCardProps) {
       </div>
     </Card>
   );
-}
+});

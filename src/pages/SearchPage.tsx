@@ -1,20 +1,21 @@
 import { useState } from "react";
 import type { Platform } from "@/types";
-import { Layout } from "@/components/Layout";
-import { PlatformFilter } from "@/components/PlatformFilter";
-import { ProfileList } from "@/components/ProfileList";
-import {
-  extractProfiles,
-  filterProfiles,
-  getPlatformLabel,
-} from "@/utils/dataHelpers";
+import { Layout } from "@/components/layout/Layout";
+import { PlatformFilter } from "@/features/search/PlatformFilter";
+import { useFilteredProfiles } from "@/features/search/useFilteredProfiles";
+import { ProfileList } from "@/components/profile/ProfileList";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { getPlatformLabel } from "@/utils/dataHelpers";
 
 export function SearchPage() {
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(searchQuery, 200);
 
-  const allProfiles = extractProfiles(platform);
-  const filtered = filterProfiles(allProfiles, searchQuery);
+  const { allProfiles, filtered } = useFilteredProfiles(
+    platform,
+    debouncedQuery
+  );
 
   return (
     <Layout title="Find Influencers">
