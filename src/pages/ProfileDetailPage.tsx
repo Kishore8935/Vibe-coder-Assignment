@@ -22,10 +22,10 @@ interface Stat {
   value: string;
 }
 
-function BackLink() {
+function BackLink({ platform }: { platform?: Platform }) {
   return (
     <Link
-      to="/"
+      to={platform ? `/?platform=${platform}` : "/"}
       className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
     >
       <ArrowLeft className="size-4" />
@@ -61,6 +61,9 @@ export function ProfileDetailPage() {
   const { username } = useParams<{ username: string }>();
   const [searchParams] = useSearchParams();
   const platformParam = searchParams.get("platform") ?? "";
+  const linkPlatform: Platform | undefined = isPlatform(platformParam)
+    ? platformParam
+    : undefined;
   const [result, setResult] = useState<LoadedProfile | null>(null);
 
   useEffect(() => {
@@ -97,7 +100,7 @@ export function ProfileDetailPage() {
   if (!result || result.username !== username) {
     return (
       <Layout title={`@${username}`}>
-        <BackLink />
+        <BackLink platform={linkPlatform} />
         <ProfileDetailSkeleton />
       </Layout>
     );
@@ -106,13 +109,15 @@ export function ProfileDetailPage() {
   if (!result.data) {
     return (
       <Layout title={`@${username}`}>
-        <BackLink />
+        <BackLink platform={linkPlatform} />
         <div className="rounded-lg border border-dashed py-16 text-center">
           <p className="mb-2 text-muted-foreground">
             Could not load profile details for @{username}.
           </p>
           <Button asChild size="sm">
-            <Link to="/">Back to search</Link>
+            <Link to={linkPlatform ? `/?platform=${linkPlatform}` : "/"}>
+              Back to search
+            </Link>
           </Button>
         </div>
       </Layout>
@@ -152,7 +157,7 @@ export function ProfileDetailPage() {
 
   return (
     <Layout title={user.fullname}>
-      <BackLink />
+      <BackLink platform={resolvedPlatform} />
 
       <div className="rounded-xl bg-card p-6 text-card-foreground ring-1 ring-foreground/10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">

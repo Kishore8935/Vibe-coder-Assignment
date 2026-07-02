@@ -1,14 +1,22 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { Platform } from "@/types";
 import { Layout } from "@/components/layout/Layout";
 import { PlatformFilter } from "@/features/search/PlatformFilter";
 import { useFilteredProfiles } from "@/features/search/useFilteredProfiles";
 import { ProfileList } from "@/components/profile/ProfileList";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { getPlatformLabel } from "@/utils/dataHelpers";
+import { getPlatformLabel, isPlatform } from "@/utils/dataHelpers";
 
 export function SearchPage() {
-  const [platform, setPlatform] = useState<Platform>("instagram");
+  const [searchParams] = useSearchParams();
+  const platformParam = searchParams.get("platform");
+  // Preserves the tab a user came from when they navigate back from a
+  // profile detail page (e.g. Back to search from a YouTube profile
+  // should land back on the YouTube tab, not always reset to Instagram).
+  const [platform, setPlatform] = useState<Platform>(
+    isPlatform(platformParam ?? "") ? (platformParam as Platform) : "instagram"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedQuery = useDebouncedValue(searchQuery, 200);
 
