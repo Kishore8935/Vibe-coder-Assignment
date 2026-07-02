@@ -90,7 +90,7 @@ Shared "Saved list" state lives in [src/store/useSavedStore.ts](src/store/useSav
 
 ### 🎨 UI/UX redesign
 - Sticky header with brand mark, Saved count badge, and a light/dark/system theme toggle.
-- Dashboard: segmented platform tabs, icon search input, responsive **1/2/3-column card grid**, platform-colored badges.
+- Dashboard: segmented platform filter (proper toggle-group semantics — `role="group"` + `aria-pressed`, not misused ARIA tabs), icon search input, responsive **1/2/3-column card grid**, platform-colored badges.
 - Profile detail: hero card + responsive stats grid + loading skeleton.
 - Rewrote `index.css` around shadcn's design tokens (light + dark); removed the legacy fixed-width `#root` shell. Added a friendly **404 page**.
 - **Micro-interactions** (`framer-motion`): staggered card entrance on the results grid (replays on tab switch), animated add/remove in the saved drawer, and a subtle hover lift on cards — all automatically disabled for users with `prefers-reduced-motion` (`MotionConfig reducedMotion="user"` + Tailwind `motion-safe:`).
@@ -104,6 +104,9 @@ Shared "Saved list" state lives in [src/store/useSavedStore.ts](src/store/useSav
 - `useFilteredProfiles` memoizes the derive-and-filter step so it only recomputes when `platform` or the (debounced) query changes.
 - `useDebouncedValue` keeps the input instant while deferring filtering by 200ms.
 - `ProfileCard` wrapped in `React.memo`; Zustand consumed via atomic selectors.
+
+### 🛠️ Developer experience
+- **GitHub Actions CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint, the 19-test suite, and the production build on every push and pull request — complementing Vercel's deploy-time build check, which doesn't run tests.
 
 ### ✅ Testing
 19 tests across 4 files (Vitest + React Testing Library):
