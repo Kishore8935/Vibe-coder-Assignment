@@ -6,7 +6,7 @@ import { defineConfig } from "vitest/config";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: process.env.VITE_BASE_URL || "/Vibe-coder-Assignment",
+  //base: process.env.VITE_BASE_URL || "/Vibe-coder-Assignment",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
