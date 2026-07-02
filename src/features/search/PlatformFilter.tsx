@@ -19,8 +19,11 @@ export function PlatformFilter({
 }: PlatformFilterProps) {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Toggle-button group, not ARIA tabs: these buttons filter the list
+          below rather than switching tabpanels, so aria-pressed is the
+          correct semantic (and needs no arrow-key navigation contract). */}
       <div
-        role="tablist"
+        role="group"
         aria-label="Filter by platform"
         className="inline-flex rounded-lg bg-muted p-1"
       >
@@ -28,8 +31,7 @@ export function PlatformFilter({
           <button
             key={p}
             type="button"
-            role="tab"
-            aria-selected={selected === p}
+            aria-pressed={selected === p}
             onClick={() => onChange(p)}
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
